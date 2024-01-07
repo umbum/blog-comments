@@ -11,10 +11,10 @@ env:
 
 jobs:
   send-create-discussion:
+    if: ${{ github.event.discussion && !github.event.comment }}
     runs-on: ubuntu-latest
     steps:
       - name: Create Message
-        if: ${{ github.event.discussion && !github.event.comment }}
         id: create-message
         run: |
           string='🐛 New Discussion on ${{ env.HOST }}/${{ env.DISCUSSION_TITLE }} \n${{ env.DISCUSSION_URL }} \n\n${{ env.DISCUSSION_BODY }}"'
@@ -33,10 +33,10 @@ jobs:
                -d '{"chat_id": "${{secrets.TELEGRAM_CHAT_ID}}", "disable_web_page_preview": true, "text": "${{ steps.create-message.outputs.MESSAGE_BODY }}"'
         shell: bash
   send-create-comment:
+    if: ${{ github.event.discussion && github.event.comment }}
     runs-on: ubuntu-latest
     steps:
       - name: Create Comment Message
-        if: ${{ github.event.discussion && github.event.comment }}
         id: create-comment-message
         run: |
           string='💬 New comment on ${{ env.HOST }}/${{ env.DISCUSSION_TITLE }} \n${{ env.COMMENT_URL }} \nby @${{ env.USER_NAME }} \n\n${{ env.COMMENT_BODY }}"'
