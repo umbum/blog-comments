@@ -17,7 +17,9 @@ jobs:
       - name: Create Message
         id: create-message
         run: |
-          string='🐛 New Discussion on ${{ env.HOST }}/${{ env.DISCUSSION_TITLE }} \n${{ env.DISCUSSION_URL }} \n\n${{ env.DISCUSSION_BODY }}'
+          head='🐛 New Discussion on ${{ env.HOST }}/${{ env.DISCUSSION_TITLE }} \n${{ env.DISCUSSION_URL }} \n\n'
+          escaped_body=$(echo '${{ env.DISCUSSION_BODY }}' | awk '{printf "%s\\n", $0}')
+          string="${head}${escaped_body}"
           echo ${string}
           echo "MESSAGE_BODY=${string}" >> $GITHUB_OUTPUT
         env:
@@ -45,7 +47,9 @@ jobs:
       - name: Create Comment Message
         id: create-comment-message
         run: |
-          string='💬 New comment on ${{ env.HOST }}/${{ env.DISCUSSION_TITLE }} \n${{ env.COMMENT_URL }} \nby @${{ env.USER_NAME }} \n\n${{ env.COMMENT_BODY }}'
+          head='💬 New comment on ${{ env.HOST }}/${{ env.DISCUSSION_TITLE }} \n${{ env.COMMENT_URL }} \nby @${{ env.USER_NAME }} \n\n'
+          escaped_body=$(echo '${{ env.COMMENT_BODY }}' | awk '{printf "%s\\n", $0}')
+          string="${head}${escaped_body}"
           echo ${string}
           echo "MESSAGE_BODY=${string}" >> $GITHUB_OUTPUT
         env:
