@@ -28,9 +28,15 @@ jobs:
           USER_NAME: ${{ github.event.discussion.user.login }}
       - name: Send Discussion Create Notification to Telegram
         run: |
-          curl -X POST "https://api.telegram.org/bot${{secrets.TELEGRAM_TOKEN}}/sendMessage" \
+          response=$(curl -X POST "https://api.telegram.org/bot${{secrets.TELEGRAM_TOKEN}}/sendMessage" \
                -H "Content-Type: application/json" \
-               -d '{"chat_id": "${{secrets.TELEGRAM_CHAT_ID}}", "disable_web_page_preview": true, "text": "${{ steps.create-message.outputs.MESSAGE_BODY }}"'
+               -d '{"chat_id": "${{secrets.TELEGRAM_CHAT_ID}}", "disable_web_page_preview": true, "text": "${{ steps.create-message.outputs.MESSAGE_BODY }}"')
+          echo $response
+          if [[ $(echo "$response" | jq -r '.ok') == "true" ]]; then
+              exit 0
+          else
+              exit 1
+          fi
         shell: bash
   send-create-comment:
     if: ${{ github.event.discussion && github.event.comment }}
@@ -52,7 +58,13 @@ jobs:
           USER_NAME: ${{ github.event.comment.user.login }}
       - name: Send Discussion Create Notification to Telegram
         run: |
-          curl -X POST "https://api.telegram.org/bot${{secrets.TELEGRAM_TOKEN}}/sendMessage" \
+          response=$(curl -X POST "https://api.telegram.org/bot${{secrets.TELEGRAM_TOKEN}}/sendMessage" \
                -H "Content-Type: application/json" \
-               -d '{"chat_id": "${{secrets.TELEGRAM_CHAT_ID}}", "disable_web_page_preview": true, "text": "${{ steps.create-comment-message.outputs.MESSAGE_BODY }}"'
+               -d '{"chat_id": "${{secrets.TELEGRAM_CHAT_ID}}", "disable_web_page_preview": true, "text": "${{ steps.create-comment-message.outputs.MESSAGE_BODY }}"')
+          echo $response
+          if [[ $(echo "$response" | jq -r '.ok') == "true" ]]; then
+              exit 0
+          else
+              exit 1
+          fi
         shell: bash
