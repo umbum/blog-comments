@@ -6,6 +6,8 @@ on:
   discussion_comment:
     types: [created]
 
+env:
+  HOST: https://umbum.dev
 
 jobs:
   send-create-discussion:
@@ -15,10 +17,9 @@ jobs:
         if: ${{ github.event.discussion && !github.event.comment }}
         id: create-message
         run: |
-          string='🐛 New Discussion on [${{ env.DISCUSSION_TITLE }}](${{ env.DISCUSSION_URL }}) \nby[@${{ env.USER_NAME }}](${{ env.USER_URL }}) \n\n${{ env.DISCUSSION_BODY }}"'
-          escaped_string=$(echo $string | sed 's/\([.!-#~*_]\)/\\\\\1/g')
-          echo ${escaped_string}
-          echo "MESSAGE_BODY=${escaped_string}" >> $GITHUB_OUTPUT
+          string='🐛 New Discussion on ${{ env.HOST }}/${{ env.DISCUSSION_TITLE }} \n${{ env.DISCUSSION_URL }} \n\n${{ env.DISCUSSION_BODY }}"'
+          echo ${string}
+          echo "MESSAGE_BODY=${string}" >> $GITHUB_OUTPUT
         env:
           DISCUSSION_URL: ${{ github.event.discussion.html_url }}
           DISCUSSION_TITLE: ${{ github.event.discussion.title }}
@@ -27,7 +28,7 @@ jobs:
           USER_NAME: ${{ github.event.discussion.user.login }}
       - name: Send Discussion Create Notification to Telegram
         run: |
-          curl -X POST "https://api.telegram.org/bot${{secrets.TELEGRAM_TOKEN}}/sendMessage?parse_mode=MarkdownV2" \
+          curl -X POST "https://api.telegram.org/bot${{secrets.TELEGRAM_TOKEN}}/sendMessage" \
                -H "Content-Type: application/json" \
                -d '{"chat_id": "${{secrets.TELEGRAM_CHAT_ID}}", "disable_web_page_preview": true, "text": "${{ steps.create-message.outputs.MESSAGE_BODY }}"'
         shell: bash
@@ -38,10 +39,9 @@ jobs:
         if: ${{ github.event.discussion && github.event.comment }}
         id: create-comment-message
         run: |
-          string='💬 New comment on [${{ env.DISCUSSION_TITLE }}](${{ env.COMMENT_URL }}) \nby[@${{ env.USER_NAME }}](${{ env.USER_URL }}) \n\n${{ env.COMMENT_BODY }}"'
-          escaped_string=$(echo $string | sed 's/\([.!-#~*_]\)/\\\\\1/g')
-          echo ${escaped_string}
-          echo "MESSAGE_BODY=${escaped_string}" >> $GITHUB_OUTPUT
+          string='💬 New comment on ${{ env.HOST }}/${{ env.DISCUSSION_TITLE }} \n${{ env.COMMENT_URL }} \nby @${{ env.USER_NAME }} \n\n${{ env.COMMENT_BODY }}"'
+          echo ${string}
+          echo "MESSAGE_BODY=${string}" >> $GITHUB_OUTPUT
         env:
           DISCUSSION_URL: ${{ github.event.discussion.html_url }}
           DISCUSSION_TITLE: ${{ github.event.discussion.title }}
@@ -52,7 +52,7 @@ jobs:
           USER_NAME: ${{ github.event.comment.user.login }}
       - name: Send Discussion Create Notification to Telegram
         run: |
-          curl -X POST "https://api.telegram.org/bot${{secrets.TELEGRAM_TOKEN}}/sendMessage?parse_mode=MarkdownV2" \
+          curl -X POST "https://api.telegram.org/bot${{secrets.TELEGRAM_TOKEN}}/sendMessage" \
                -H "Content-Type: application/json" \
                -d '{"chat_id": "${{secrets.TELEGRAM_CHAT_ID}}", "disable_web_page_preview": true, "text": "${{ steps.create-comment-message.outputs.MESSAGE_BODY }}"'
         shell: bash
